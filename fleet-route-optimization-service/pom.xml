@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.infotact.fleet</groupId>
-	<artifactId>fleet-management-route-optimization</artifactId>
+	<artifactId>fleet-route-optimization-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>fleet-management-route-optimization</name>
+	<name>fleet-route-optimization-service</name>
 	<description>Fleet Management and Route Optimization Engine Backend Services.</description>
 	<url/>
 	<licenses>

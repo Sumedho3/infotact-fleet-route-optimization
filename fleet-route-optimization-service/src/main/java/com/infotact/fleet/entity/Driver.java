@@ -30,10 +30,12 @@ public class Driver extends BaseEntity {
 
     @Column(name = "daily_shift_hours_limit", nullable = false)
     private Integer dailyShiftHoursLimit = 8; // Default regulatory limit parameter
+
+	@OneToOne(
+	        mappedBy = "driver",
+	        cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+	        fetch = FetchType.LAZY
+	)
+	private Vehicle vehicle;
+	
 }
-@OneToOne(
-        mappedBy = "driver",
-        cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-        fetch = FetchType.LAZY
-)
-private Vehicle vehicle;

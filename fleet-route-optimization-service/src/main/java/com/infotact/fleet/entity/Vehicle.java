@@ -30,3 +30,6 @@ public class Vehicle extends BaseEntity {
     @Column(name = "maintenance_status", nullable = false)
     private Boolean maintenanceStatus = false; // Flags if the truck needs service
 }
+@OneToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "driver_id", referencedColumnName = "id")
+private Driver driver;

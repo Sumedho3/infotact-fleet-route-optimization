@@ -32,4 +32,8 @@ public class DeliveryTask extends BaseEntity {
 
     @Column(name = "status", nullable = false, length = 30)
     private String status = "UNASSIGNED";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "route_id")
+    private Route route;
 }

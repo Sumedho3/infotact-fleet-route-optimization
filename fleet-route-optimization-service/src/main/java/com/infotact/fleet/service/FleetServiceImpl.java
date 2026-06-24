@@ -8,6 +8,7 @@ import com.infotact.fleet.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,6 +58,44 @@ public class FleetServiceImpl implements FleetService {
         vehicle.setMaintenanceStatus(status);
 
         return mapToVehicleResponse(vehicleRepository.save(vehicle));
+    }
+
+    @Override
+    public DriverResponseDTO assignDriverToVehicle(Long driverId, Long vehicleId) {
+
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() ->
+                        new RuntimeException("Driver not found with ID: " + driverId));
+
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() ->
+                        new RuntimeException("Vehicle not found with ID: " + vehicleId));
+
+        if (Boolean.TRUE.equals(vehicle.getMaintenanceStatus())) {
+            throw new IllegalStateException(
+                    "Operation failed: Vehicle "
+                            + vehicle.getLicensePlate()
+                            + " is currently under maintenance!");
+        }
+
+        if (driver.getLicenseExpiryDate().isBefore(LocalDate.now())) {
+            throw new IllegalStateException(
+                    "Operation failed: Driver "
+                            + driver.getFullName()
+                            + " has an expired commercial license!");
+        }
+
+        if (driver.getVehicle() != null) {
+            driver.getVehicle().setDriver(null);
+        }
+
+        vehicle.setDriver(driver);
+        driver.setVehicle(vehicle);
+
+        driverRepository.save(driver);
+        vehicleRepository.save(vehicle);
+
+        return mapToDriverResponse(driver);
     }
 
     @Override

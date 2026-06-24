@@ -4,10 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -19,7 +19,10 @@ public class VehicleRequestDTO {
     @Size(min = 4, max = 20, message = "License plate must be between 4 and 20 characters")
     private String licensePlate;
 
-    @NotNull(message = "Capacity metric is required")
-    @Positive(message = "Cargo capacity must be a positive number greater than zero")
+    @NotNull(message = "Capacity is required")
+    @Positive(message = "Capacity must be greater than zero")
+    private Double capacityKg;
+
+    @NotBlank(message = "Fuel type cannot be blank")
     private String fuelType;
 }

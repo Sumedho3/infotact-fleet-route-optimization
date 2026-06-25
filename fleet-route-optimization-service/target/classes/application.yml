@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      # 🔄 SCHEMA UPDATES:
+      # 'update' automatically updates the schema by reflecting new entities/columns without deleting data
       ddl-auto: update
     show-sql: true
     properties:

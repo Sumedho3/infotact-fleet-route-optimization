@@ -2,6 +2,8 @@ package com.infotact.fleet.service;
 
 import java.util.List;
 
+import com.infotact.fleet.dto.DeliveryTaskRequestDTO;
+import com.infotact.fleet.dto.DeliveryTaskResponseDTO;
 import com.infotact.fleet.dto.DriverRequestDTO;
 import com.infotact.fleet.dto.DriverResponseDTO;
 import com.infotact.fleet.dto.VehicleRequestDTO;
@@ -18,4 +20,6 @@ public interface FleetService {
     DriverResponseDTO assignDriverToVehicle(Long driverId, Long vehicleId);
 
     List<VehicleResponseDTO> getAvailableVehicles();
+
+    DeliveryTaskResponseDTO createTask(DeliveryTaskRequestDTO request);
 }

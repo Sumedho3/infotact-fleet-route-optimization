@@ -1,1 +1,56 @@
-/.metadata/
+# Prerequisites
+*.class
+*.log
+
+# Mobile Tools and IDEs
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.cargotoolkey
+
+# Build directories
+target/
+**/target/
+build/
+**/build/
+
+# Spring Boot & Maven items
+.mvn/wrapper/maven-wrapper.jar
+
+# Log files
+*.log
+logs/
+
+# ==========================================
+# Permanent IDE Fixes (Protects against everyone's environment)
+# ==========================================
+
+### STS / Eclipse ###
+.metadata/
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### VS Code ###
+.vscode/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/

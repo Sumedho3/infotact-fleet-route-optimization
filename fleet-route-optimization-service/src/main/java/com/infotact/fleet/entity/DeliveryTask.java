@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.infotact.fleet.model.TaskStatus;
 
 @Entity
 @Table(name = "delivery_tasks")
@@ -30,8 +31,9 @@ public class DeliveryTask extends BaseEntity {
     @Column(name = "package_weight_kg", nullable = false)
     private Double packageWeightKg;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private String status = "UNASSIGNED";
+    private TaskStatus status = TaskStatus.UNASSIGNED;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "route_id")

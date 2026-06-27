@@ -1,15 +1,17 @@
 package com.infotact.fleet.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infotact.fleet.dto.VehicleRequestDTO;
 import com.infotact.fleet.dto.VehicleResponseDTO;
 import com.infotact.fleet.service.FleetService;
+
+import tools.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,7 +27,7 @@ class FleetControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private FleetService fleetService;
 
     @Test

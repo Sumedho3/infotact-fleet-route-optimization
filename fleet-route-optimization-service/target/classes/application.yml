@@ -24,3 +24,13 @@ spring:
 # 📡 CONSOLE PORT PROFILE
 server:
   port: 8081
+
+# ==========================================
+# External Third-Party Routing API Configurations
+# ==========================================
+app:
+  external:
+    map-service:
+      base-url: "http://router.project-osrm.org"
+      api-key: "${MAP_API_KEY:mock-local-developer-key}"
+      timeout-ms: 5000

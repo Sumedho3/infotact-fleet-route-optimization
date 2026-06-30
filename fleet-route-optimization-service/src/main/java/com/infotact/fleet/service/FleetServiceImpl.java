@@ -1,8 +1,10 @@
 package com.infotact.fleet.service;
 
 import com.infotact.fleet.dto.*;
+import com.infotact.fleet.entity.DeliveryTask;
 import com.infotact.fleet.entity.Driver;
 import com.infotact.fleet.entity.Vehicle;
+import com.infotact.fleet.repository.DeliveryTaskRepository;
 import com.infotact.fleet.repository.DriverRepository;
 import com.infotact.fleet.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
@@ -18,11 +20,14 @@ public class FleetServiceImpl implements FleetService {
 
 	private final VehicleRepository vehicleRepository;
 	private final DriverRepository driverRepository;
+	private final DeliveryTaskRepository deliveryTaskRepository;
 	
 	public FleetServiceImpl(VehicleRepository vehicleRepository,
-	                        DriverRepository driverRepository) {
+	                        DriverRepository driverRepository,
+	                        DeliveryTaskRepository deliveryTaskRepository) {
 	    this.vehicleRepository = vehicleRepository;
 	    this.driverRepository = driverRepository;
+	    this.deliveryTaskRepository = deliveryTaskRepository;
 	}
 
 	@Override
@@ -110,21 +115,23 @@ public class FleetServiceImpl implements FleetService {
 	@Override
 	@Transactional
 	public DeliveryTaskResponseDTO createTask(DeliveryTaskRequestDTO request) {
-	    com.infotact.fleet.entity.DeliveryTask task = new com.infotact.fleet.entity.DeliveryTask();
+	    DeliveryTask task = new DeliveryTask();
 	
 	    task.setDestinationAddress(request.getDestinationAddress());
 	    task.setLatitude(request.getLatitude());
 	    task.setLongitude(request.getLongitude());
 	    task.setPackageWeightKg(request.getPackageWeightKg());
 	    task.setStatus(com.infotact.fleet.model.TaskStatus.UNASSIGNED);
+	    
+	    DeliveryTask savedTask = deliveryTaskRepository.save(task);
 	
 	    return new DeliveryTaskResponseDTO(
-	            1L,
-	            task.getDestinationAddress(),
-	            task.getLatitude(),
-	            task.getLongitude(),
-	            task.getPackageWeightKg(),
-	            task.getStatus(),
+	    		savedTask.getId(),
+	    		savedTask.getDestinationAddress(),
+	    		savedTask.getLatitude(),
+	    		savedTask.getLongitude(),
+	    		savedTask.getPackageWeightKg(),
+	    		savedTask.getStatus(),
 	            null,
 	            java.time.LocalDateTime.now(),
 	            java.time.LocalDateTime.now()

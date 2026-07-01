@@ -40,7 +40,6 @@ public class NearestNeighborTspSolver {
                     }
                 }
             }
-
             // Move to the nearest neighbor found
             currentNode = nextNode;
             optimizedSequence.add(currentNode);

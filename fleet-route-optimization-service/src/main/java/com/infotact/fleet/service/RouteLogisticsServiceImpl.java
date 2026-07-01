@@ -49,7 +49,7 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
                         "Target vehicle asset not found with ID: " + request.getVehicleId()));
 
         // 2. Load the raw unstaged delivery tasks from MySQL matching user selections
-        List<DeliveryTask> rawTasks = deliveryTaskRepository.findAllById(request.getDeliveryTaskIds());
+        List<DeliveryTask> rawTasks = deliveryTaskRepository.findAllById(request.getTaskIds());
         if (rawTasks.isEmpty()) {
             throw new IllegalArgumentException(
                     "Cannot optimize an empty list of warehouse delivery tasks.");
@@ -58,7 +58,7 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
         // 3. Transform entity properties into coordinate data models
         List<DeliveryTaskResponseDTO> taskDtos = rawTasks.stream().map(task -> {
             DeliveryTaskResponseDTO dto = new DeliveryTaskResponseDTO();
-            dto.setTaskId(task.getId());
+            dto.setId(task.getId());
             dto.setDestinationAddress(task.getDestinationAddress());
             dto.setLatitude(task.getLatitude());
             dto.setLongitude(task.getLongitude());
@@ -91,12 +91,12 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
 
         List<DeliveryTask> sortedEntities = new ArrayList<>();
         for (DeliveryTaskResponseDTO sortedTaskDto : optimizedResults.getOptimizedStops()) {
-            DeliveryTask task = deliveryTaskRepository.findById(sortedTaskDto.getTaskId()).get();
+            DeliveryTask task = deliveryTaskRepository.findById(sortedTaskDto.getId()).orElseThrow(()-> new IllegalArgumentException("Invalid TaskId"));
             task.setStatus(TaskStatus.ASSIGNED);
             sortedEntities.add(task);
         }
 
-        manifest.setDeliveryTasks(sortedEntities);
+        manifest.setOptimizedStops(sortedEntities);
 
         routeManifestRepository.save(manifest);
 

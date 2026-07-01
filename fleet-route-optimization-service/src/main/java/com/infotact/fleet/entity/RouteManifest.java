@@ -38,4 +38,7 @@ public class RouteManifest extends BaseEntity {
     @JoinColumn(name = "route_manifest_id")
     @OrderColumn(name = "stop_sequence_index")
     private List<DeliveryTask> optimizedStops = new ArrayList<>();
+    
+    @Column(name = "status", nullable = false)
+    private String status;
 }

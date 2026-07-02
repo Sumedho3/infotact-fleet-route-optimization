@@ -29,6 +29,13 @@ public class RoutingOptimizationServiceImpl {
             DistanceMatrix liveMatrix,
             Long vehicleId,
             String licensePlate) {
+        // 🎯 DAY 6 GUARD CHECK: Enforce threshold capacity validation bounds
+        if (tasks == null || tasks.size() < 2) {
+            throw new IllegalArgumentException(
+                    "Route optimization sequencing requires a minimum threshold of 2 delivery waypoints (Stops supplied: "
+                            + (tasks == null ? 0 : tasks.size()) + ")"
+            );
+        }
 
         // 1. Run the TSP Nearest Neighbor sorting brain using the real-world road matrix
         List<Integer> optimizedIndexes = tspSolver.computeOptimizedSequence(liveMatrix);

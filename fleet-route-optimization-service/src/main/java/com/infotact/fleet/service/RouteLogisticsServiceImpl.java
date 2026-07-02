@@ -50,6 +50,13 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
 
         // 2. Load the raw unstaged delivery tasks from MySQL matching user selections
         List<DeliveryTask> rawTasks = deliveryTaskRepository.findAllById(request.getTaskIds());
+        // 🎯 FIXED FAIL-FAST GUARD: Stop execution BEFORE calling the external OSRM API
+        if (rawTasks == null || rawTasks.size() < 2) {
+            throw new IllegalArgumentException(
+                    "Route optimization requires a minimum of 2 delivery waypoints to compute a road network matrix. Stops supplied: "
+                            + (rawTasks == null ? 0 : rawTasks.size())
+            );
+        }
         if (rawTasks.isEmpty()) {
             throw new IllegalArgumentException(
                     "Cannot optimize an empty list of warehouse delivery tasks.");

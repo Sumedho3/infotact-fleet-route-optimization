@@ -1,21 +1,17 @@
 package com.infotact.fleet.entity;
-
+import com.infotact.fleet.model.ManifestStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "route_manifests")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class RouteManifest extends BaseEntity {
+public class RouteManifest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,20 +21,27 @@ public class RouteManifest extends BaseEntity {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
+    @Column(name = "driver_id")
+    private Long driverId;
+
     @Column(name = "total_distance_km", nullable = false)
-    private Double totalDistanceKm;
+    private double totalDistanceKm;
 
     @Column(name = "total_duration_minutes", nullable = false)
-    private Double totalDurationMinutes;
+    private double totalDurationMinutes;
 
-    // 🎯 ONE-TO-MANY RELATIONSHIP UNIFIED LINK:
-    // Tracks the ordered collection of delivery tasks assigned to this manifest run.
-    // We add an explicit order column to preserve the exact sequence calculated by the engine!
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "route_manifest_id")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 32)
+    private ManifestStatus status = ManifestStatus.UNASSIGNED;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "manifest_id")
     @OrderColumn(name = "stop_sequence_index")
-    private List<DeliveryTask> optimizedStops = new ArrayList<>();
-    
-    @Column(name = "status", nullable = false)
-    private String status;
+    private List<DeliveryTask> optimizedStops;
+
+    @Column(name = "dispatched_at")
+    private LocalDateTime dispatchedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 }

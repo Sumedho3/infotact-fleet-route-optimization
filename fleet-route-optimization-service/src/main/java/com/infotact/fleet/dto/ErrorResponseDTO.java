@@ -1,6 +1,7 @@
 package com.infotact.fleet.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +10,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class ErrorResponseDTO {
 	
@@ -18,5 +18,18 @@ public class ErrorResponseDTO {
     private String error;
     private String message;
     private String path;
+    private List<String> details;
+    
+    public ErrorResponseDTO() {
+        this.timestamp = LocalDateTime.now();
+    }
+
+    public ErrorResponseDTO(int status, String error, String message, String path) {
+        this();
+        this.status = status;
+        this.error = error;
+        this.message = message;
+        this.path = path;
+    }
 
 }

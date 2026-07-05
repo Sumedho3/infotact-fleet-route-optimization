@@ -32,7 +32,6 @@ public class MapProviderExceptionHandler {
         }
 
         ErrorResponseDTO errorPayload = new ErrorResponseDTO(
-                LocalDateTime.now(),
                 status.value(),
                 "External Routing Provider Error",
                 errorMessage,
@@ -50,7 +49,6 @@ public class MapProviderExceptionHandler {
         // Only target timeout strings to avoid swallowing internal state exceptions
         if (ex.getMessage() != null && ex.getMessage().contains("Timeout")) {
             ErrorResponseDTO errorPayload = new ErrorResponseDTO(
-                    LocalDateTime.now(),
                     HttpStatus.GATEWAY_TIMEOUT.value(),
                     "Network Gateway Timeout",
                     "The external mapping server took too long to return the distance matrix data.",

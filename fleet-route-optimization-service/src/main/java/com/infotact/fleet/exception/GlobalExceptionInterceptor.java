@@ -19,7 +19,6 @@ public class GlobalExceptionInterceptor {
 	@ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponseDTO> handleBusinessRuleViolation(IllegalStateException ex, HttpServletRequest request) {
         ErrorResponseDTO error = new ErrorResponseDTO(
-                LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 ex.getMessage(),
@@ -32,7 +31,6 @@ public class GlobalExceptionInterceptor {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponseDTO> handleResourceNotFound(RuntimeException ex, HttpServletRequest request) {
         ErrorResponseDTO error = new ErrorResponseDTO(
-                LocalDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
                 HttpStatus.NOT_FOUND.getReasonPhrase(),
                 ex.getMessage(),
@@ -52,7 +50,6 @@ public class GlobalExceptionInterceptor {
                 .collect(Collectors.joining(", "));
 
         ErrorResponseDTO error = new ErrorResponseDTO(
-                LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 "Validation Failed: " + validationErrorMessage,
@@ -66,7 +63,6 @@ public class GlobalExceptionInterceptor {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleFallbackInternalError(Exception ex, HttpServletRequest request) {
         ErrorResponseDTO error = new ErrorResponseDTO(
-                LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 "An unexpected core internal processing error occurred: " + ex.getMessage(),

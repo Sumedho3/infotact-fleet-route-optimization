@@ -1,9 +1,35 @@
 package com.infotact.fleet.model;
 
+import com.infotact.fleet.exception.DeliveryStateConflictException;
+import java.util.List;
+
 public enum TaskStatus {
-	UNASSIGNED,  // Task is logged but not tied to a vehicle journey manifest
-	ASSIGNED,
-    DISPATCHED,  // Bound to an active vehicle, waiting for engine ignition
-    IN_TRANSIT,  // Cargo payload is actively moving on the highway network
-    DELIVERED    // Drop-off successfully acknowledged by client geofence confirmation
+
+    UNASSIGNED,
+    ASSIGNED,
+    DISPATCHED,
+    IN_TRANSIT,
+    DELIVERED;
+
+    /**
+     * 🛡️ TASK TRANSITION GUARD MATRIX:
+     * Restricts drivers and backend pipelines from skipping individual delivery task states.
+     */
+    public void validateTransitionTo(TaskStatus targetStatus) {
+
+        List<TaskStatus> allowedNextStates = switch (this) {
+            case UNASSIGNED -> List.of(ASSIGNED);
+            case ASSIGNED -> List.of(DISPATCHED, UNASSIGNED);
+            case DISPATCHED -> List.of(IN_TRANSIT);
+            case IN_TRANSIT -> List.of(DELIVERED);
+            case DELIVERED -> List.of();
+        };
+
+        if (!allowedNextStates.contains(targetStatus)) {
+            throw new DeliveryStateConflictException(
+                    "Illegal delivery task state transition: Cannot change status from "
+                            + this + " to " + targetStatus
+            );
+        }
+    }
 }

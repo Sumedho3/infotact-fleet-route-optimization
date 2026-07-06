@@ -6,6 +6,7 @@ import com.infotact.fleet.dto.RouteOptimizationResponseDTO;
 import com.infotact.fleet.entity.DeliveryTask;
 import com.infotact.fleet.entity.RouteManifest;
 import com.infotact.fleet.entity.Vehicle;
+import com.infotact.fleet.model.ManifestStatus;
 import com.infotact.fleet.model.TaskStatus;
 import com.infotact.fleet.repository.DeliveryTaskRepository;
 import com.infotact.fleet.repository.RouteManifestRepository;
@@ -94,7 +95,7 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
         manifest.setVehicle(vehicle);
         manifest.setTotalDistanceKm(optimizedResults.getTotalDistanceKm());
         manifest.setTotalDurationMinutes(optimizedResults.getTotalDurationMinutes());
-        manifest.setStatus("OPTIMIZED");
+        manifest.setStatus(ManifestStatus.OPTIMIZED);
 
         List<DeliveryTask> sortedEntities = new ArrayList<>();
         for (DeliveryTaskResponseDTO sortedTaskDto : optimizedResults.getOptimizedStops()) {

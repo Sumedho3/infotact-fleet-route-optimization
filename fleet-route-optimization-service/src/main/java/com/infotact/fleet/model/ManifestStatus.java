@@ -9,6 +9,7 @@ public enum ManifestStatus {
     DISPATCHED,
     IN_TRANSIT,
     DELIVERED,
+    OPTIMIZED,
     CANCELLED;
 
     /**

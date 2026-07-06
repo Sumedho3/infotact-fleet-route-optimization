@@ -11,7 +11,7 @@ import java.util.List;
 @Table(name = "route_manifests")
 @Getter
 @Setter
-public class RouteManifest {
+public class RouteManifest extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

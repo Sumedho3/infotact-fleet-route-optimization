@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import com.infotact.fleet.dto.ErrorResponseDTO;
 
@@ -73,6 +74,34 @@ public class GlobalExceptionInterceptor {
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 "Validation Failed: " + validationErrorMessage,
+                request.getRequestURI()
+        );
+        
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+    
+    /**
+     * 🛑 HANDLER 4: Intercepts client payloads that are completely unparsable or structurally broken.
+     * Extracts precise field-level syntax faults to guide frontend correction cycles.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMalformedJsonPayload(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String localizedErrorMessage = "Malformed JSON request payload body structure syntax error.";
+        
+        // Traverse the exception cause to extract the specific broken field name if available
+        if (ex.getCause() instanceof com.fasterxml.jackson.databind.exc.MismatchedInputException mismatchedInputException) {
+            if (!mismatchedInputException.getPath().isEmpty()) {
+                String fieldName = mismatchedInputException.getPath().get(0).getFieldName();
+                localizedErrorMessage = "Parsing failure on target property field: '" + fieldName + "'. Verified data type mismatch constraint violation.";
+            }
+        } else if (ex.getMessage() != null && ex.getMessage().contains("Required request body is missing")) {
+            localizedErrorMessage = "Required HTTP request payload body structure is missing completely.";
+        }
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                localizedErrorMessage,
                 request.getRequestURI()
         );
         

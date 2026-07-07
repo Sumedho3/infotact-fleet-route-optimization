@@ -23,6 +23,7 @@ public enum ManifestStatus {
             case DISPATCHED -> List.of(IN_TRANSIT, CANCELLED);
             case IN_TRANSIT -> List.of(DELIVERED, CANCELLED);
             case DELIVERED, CANCELLED -> List.of();
+            default -> List.of();
         };
 
         if (!allowedNextStates.contains(targetStatus)) {

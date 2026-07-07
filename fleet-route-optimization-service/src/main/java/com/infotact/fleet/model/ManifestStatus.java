@@ -19,11 +19,10 @@ public enum ManifestStatus {
     public void validateTransitionTo(ManifestStatus targetStatus) {
 
         List<ManifestStatus> allowedNextStates = switch (this) {
-            case UNASSIGNED -> List.of(DISPATCHED, CANCELLED);
+            case UNASSIGNED, OPTIMIZED -> List.of(DISPATCHED, CANCELLED);
             case DISPATCHED -> List.of(IN_TRANSIT, CANCELLED);
             case IN_TRANSIT -> List.of(DELIVERED, CANCELLED);
             case DELIVERED, CANCELLED -> List.of();
-            default -> List.of();
         };
 
         if (!allowedNextStates.contains(targetStatus)) {

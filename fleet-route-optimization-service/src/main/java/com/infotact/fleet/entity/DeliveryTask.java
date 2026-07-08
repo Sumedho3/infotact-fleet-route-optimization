@@ -38,4 +38,7 @@ public class DeliveryTask extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "route_id")
     private Route route;
+    public void validateTransitionTo(TaskStatus targetStatus) {
+        this.status.validateTransitionTo(targetStatus);
+    }
 }

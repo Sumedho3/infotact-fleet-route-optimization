@@ -12,6 +12,7 @@ import com.infotact.fleet.dto.DriverAssignmentRequestDTO;
 import com.infotact.fleet.entity.RouteManifest;
 import com.infotact.fleet.exception.DeliveryStateConflictException;
 import com.infotact.fleet.model.ManifestStatus;
+import com.infotact.fleet.model.TaskStatus;
 import com.infotact.fleet.repository.RouteManifestRepository;
 
 @Service
@@ -23,37 +24,63 @@ public class ManifestWorkflowServiceImpl implements ManifestWorkflowService {
     @Override
     @Transactional
     public RouteManifest assignDriverToManifest(DriverAssignmentRequestDTO request) {
+        return compileAndLinkManifest(request.getManifestId(), request.getDriverId());
+    }
 
-        // 1. Fetch the manifest target row
-        RouteManifest manifest = routeManifestRepository.findById(request.getManifestId())
+    @Override
+    @Transactional
+    public RouteManifest compileAndLinkManifest(Long manifestId, Long driverId) {
+
+        // 1. Fetch the target optimized manifest record
+        RouteManifest manifest = routeManifestRepository.findById(manifestId)
                 .orElseThrow(() ->
                         new NoSuchElementException(
-                                "Route manifest target record not found with ID: "
-                                        + request.getManifestId()));
+                                "Route manifest record not found with ID: " + manifestId));
 
         // 2. CONFLICT GUARD CHECK
         List<ManifestStatus> conflictingStatuses = Arrays.asList(
                 ManifestStatus.DISPATCHED,
-                ManifestStatus.IN_TRANSIT
-        );
+                ManifestStatus.IN_TRANSIT);
 
         boolean isDriverBusy =
                 routeManifestRepository.existsByDriverIdAndStatusIn(
-                        request.getDriverId(),
-                        conflictingStatuses
-                );
+                        driverId,
+                        conflictingStatuses);
 
         if (isDriverBusy) {
             throw new DeliveryStateConflictException(
                     "Cross-assignment conflict asset error: Driver with ID "
-                            + request.getDriverId()
-                            + " is already actively assigned to an ongoing dispatched or in-transit route manifest."
-            );
+                            + driverId
+                            + " is already actively assigned to an ongoing dispatched or in-transit route manifest.");
         }
 
-        // 3. Assign Driver
-        manifest.setDriverId(request.getDriverId());
+        // 3. STATE INVARIANT CHECK
+        if (manifest.getStatus() != ManifestStatus.UNASSIGNED) {
+            throw new DeliveryStateConflictException(
+                    "Compilation Failure: Cannot link driver to a manifest that is already in "
+                            + manifest.getStatus()
+                            + " status.");
+        }
 
+        // 4. LINK ASSETS
+        manifest.setDriverId(driverId);
+
+        // 5. UPDATE TASK STATES
+        if (manifest.getOptimizedStops() != null) {
+
+            manifest.getOptimizedStops().forEach(task -> {
+
+                if (task.getStatus() == TaskStatus.UNASSIGNED) {
+
+                    task.setStatus(TaskStatus.ASSIGNED);
+
+                }
+
+            });
+
+        }
+
+        // 6. SAVE
         return routeManifestRepository.save(manifest);
     }
 
@@ -64,8 +91,8 @@ public class ManifestWorkflowServiceImpl implements ManifestWorkflowService {
         return routeManifestRepository.findById(manifestId)
                 .orElseThrow(() ->
                         new NoSuchElementException(
-                                "Route manifest record not found with ID: "
-                                        + manifestId));
+                                "Route manifest record not found with ID: " + manifestId));
+
     }
 
     @Override
@@ -74,8 +101,8 @@ public class ManifestWorkflowServiceImpl implements ManifestWorkflowService {
 
         return routeManifestRepository.findAll()
                 .stream()
-                .filter(manifest ->
-                        manifest.getStatus().name().equalsIgnoreCase(status))
+                .filter(m -> m.getStatus().name().equalsIgnoreCase(status))
                 .toList();
+
     }
 }

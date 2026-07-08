@@ -16,6 +16,17 @@ public interface ManifestWorkflowService {
     RouteManifest assignDriverToManifest(DriverAssignmentRequestDTO request);
 
     /**
+     * 🧩 CORE ORCHESTRATION COMPILATION:
+     * Fully compiles an optimized manifest path layout, binds an available driver profile,
+     * updates the root lifecycle status, and prepares the batch for warehouse dispatch.
+     *
+     * @param manifestId The target manifest ID requiring final consolidation.
+     * @param driverId The driver asset ID being bound to this itinerary sequence.
+     * @return The fully aggregated, saved RouteManifest entity.
+     */
+    RouteManifest compileAndLinkManifest(Long manifestId, Long driverId);
+
+    /**
      * Fetches a specific route manifest record by its unique database primary identifier.
      *
      * @param manifestId Unique identifier of the target manifest.

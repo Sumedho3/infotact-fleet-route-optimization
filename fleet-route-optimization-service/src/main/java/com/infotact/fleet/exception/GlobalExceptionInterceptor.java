@@ -107,6 +107,23 @@ public class GlobalExceptionInterceptor {
         
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
+    
+    /**
+     * 🛑 HANDLER 5: Gracefully catches HTTP 429 errors thrown by downstream third-party location providers.
+     * Prevents internal cascading routing thread exhaustion by sending an organized backoff notification.
+     */
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDownstreamRateLimits(RateLimitExceededException ex, HttpServletRequest request) {
+        
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                HttpStatus.TOO_MANY_REQUESTS.value(), // HTTP 429 Too Many Requests
+                HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase(),
+                "Downstream Provider Quota Exhaustion: " + ex.getMessage() + " Please initiate exponential retry backoff.",
+                request.getRequestURI()
+        );
+        
+        return new ResponseEntity<>(error, HttpStatus.TOO_MANY_REQUESTS);
+    }
 
     // 🔍 Fallback catch-all for unexpected internal server errors
     @ExceptionHandler(Exception.class)

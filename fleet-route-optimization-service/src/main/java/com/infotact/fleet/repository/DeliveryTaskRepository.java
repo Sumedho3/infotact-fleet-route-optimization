@@ -15,6 +15,7 @@ import java.util.Optional;
 @Repository
 public interface DeliveryTaskRepository extends JpaRepository<DeliveryTask, Long> {
 
+
     /**
      * 🔍 STATE FILTER MATRIX:
      * Safely fetches a batch of delivery tasks matching an explicit lifecycle state status.

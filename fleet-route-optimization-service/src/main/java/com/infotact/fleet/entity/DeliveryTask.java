@@ -41,4 +41,5 @@ public class DeliveryTask extends BaseEntity {
     public void validateTransitionTo(TaskStatus targetStatus) {
         this.status.validateTransitionTo(targetStatus);
     }
+
 }

@@ -1,4 +1,7 @@
 package com.infotact.fleet.service;
+import com.infotact.fleet.entity.RouteManifest;
+import com.infotact.fleet.model.ManifestStatus;
+import com.infotact.fleet.repository.RouteManifestRepository;
 
 import com.infotact.fleet.entity.DeliveryTask;
 import com.infotact.fleet.model.TaskStatus;
@@ -11,6 +14,33 @@ import java.util.NoSuchElementException;
 
 @Service
 public class TaskStateServiceImpl implements TaskStateService {
+    @Override
+    @Transactional // 🎯 CRITICAL: Ensures the parent update and child updates succeed or fail together as an atomic block
+    public RouteManifest updateManifestAndCascadeStatus(Long manifestId, ManifestStatus targetStatus) {
+
+        // 1. Fetch parent record layout
+        @service
+        private RouteManifestRepository routeManifestRepository;
+        RouteManifest manifest = RouteManifestRepository.findById(manifestId)
+                .orElseThrow(() ->
+                        new NoSuchElementException(
+                                "Route manifest record not found with ID: " + manifestId));
+
+
+        // 2. Validate state transition boundaries using Day 4 explicit guard matrix rules
+        manifest.validateTransitionTo(targetStatus);
+
+        // 3. Mutate parent status
+        manifest.setStatus(targetStatus);
+        RouteManifest savedManifest = routeManifestRepository.save(manifest);
+
+        // 4. CASCADE PIPELINE: If parent turns DISPATCHED, trigger child cascade changes down to database rows
+        if (targetStatus == ManifestStatus.DISPATCHED) {
+            deliveryTaskRepository.cascadeStatusForManifestTasks(manifestId, TaskStatus.DISPATCHED);
+        }
+
+        return savedManifest;
+    }
 
     @Autowired
     private DeliveryTaskRepository deliveryTaskRepository;

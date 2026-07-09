@@ -19,8 +19,11 @@ public class MapProviderExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleMapProviderNetworkException(WebClientResponseException ex, HttpServletRequest request) {
         HttpStatus status = (HttpStatus) ex.getStatusCode();
         String errorMessage;
-
-        if (status.equals(HttpStatus.TOO_MANY_REQUESTS)) {
+        
+        if (status.value() == 400 || status.value() == 422) {
+            errorMessage = "Geocoding Payload Fault: The address provided is invalid or the coordinates do not exist in the geographic subsystem.";
+        }
+        else if (status.equals(HttpStatus.TOO_MANY_REQUESTS)) {
             errorMessage = "Map provider rate limit exceeded (HTTP 429). Please throttle outbound routing requests.";
         } else if (status.is5xxServerError()) {
             errorMessage = "Third-party OSRM routing server is currently experiencing an outage. Fallback mode suggested.";

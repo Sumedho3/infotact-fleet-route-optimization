@@ -101,7 +101,7 @@ public class ManifestWorkflowServiceImpl implements ManifestWorkflowService {
                         ManifestStatus.DISPATCHED);
 
         // 4. Record departure timestamp
-        updatedManifest.setDepartureAt(LocalDateTime.now());
+        updatedManifest.setDispatchedAt(LocalDateTime.now());
 
         // 5. Save timestamp
         return routeManifestRepository.save(updatedManifest);

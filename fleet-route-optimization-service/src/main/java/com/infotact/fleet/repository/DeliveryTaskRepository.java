@@ -5,6 +5,7 @@ import com.infotact.fleet.model.TaskStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -40,4 +41,13 @@ public interface DeliveryTaskRepository extends JpaRepository<DeliveryTask, Long
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT t FROM DeliveryTask t WHERE t.id = :id")
     Optional<DeliveryTask> findByIdForUpdate(@Param("id") Long id);
+    
+    
+    /**
+     * 🌊 STATE CASCADE PROPAGATION QUERY:
+     * Bulk updates all underlying tasks belonging to a specific parent manifest.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE DeliveryTask t SET t.status = :targetStatus WHERE t.route.id = :manifestId")
+    int cascadeStatusForManifestTasks(@Param("manifestId") Long manifestId, @Param("targetStatus") TaskStatus targetStatus);
 }

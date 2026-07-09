@@ -27,6 +27,16 @@ public interface ManifestWorkflowService {
     RouteManifest compileAndLinkManifest(Long manifestId, Long driverId);
 
     /**
+     * 🚀 DISPATCH FINALIZATION STEP:
+     * Authoritatively finalizes a route manifest lifecycle, recording chronological
+     * departure timestamps and triggering underlying stop state cascades.
+     *
+     * @param manifestId The target manifest record key to release.
+     * @return The updated RouteManifest entity.
+     */
+    RouteManifest finalizeDispatch(Long manifestId);
+
+    /**
      * Fetches a specific route manifest record by its unique database primary identifier.
      *
      * @param manifestId Unique identifier of the target manifest.

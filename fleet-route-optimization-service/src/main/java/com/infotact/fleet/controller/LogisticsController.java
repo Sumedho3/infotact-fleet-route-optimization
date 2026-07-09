@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.infotact.fleet.dto.DeliveryTaskRequestDTO;
 import com.infotact.fleet.dto.DeliveryTaskResponseDTO;
 import com.infotact.fleet.dto.DriverResponseDTO;
+import com.infotact.fleet.entity.RouteManifest;
 import com.infotact.fleet.service.FleetService;
 import com.infotact.fleet.service.ManifestWorkflowService;
 
@@ -24,9 +25,10 @@ import jakarta.validation.Valid;
 public class LogisticsController {
 
     private final FleetService fleetService;
-    private ManifestWorkflowService manifestWorkflowService;
+    private final ManifestWorkflowService manifestWorkflowService;
 
-    public LogisticsController(FleetService fleetService, ManifestWorkflowService manifestWorkflowService) {
+    public LogisticsController(FleetService fleetService,
+                               ManifestWorkflowService manifestWorkflowService) {
         this.fleetService = fleetService;
         this.manifestWorkflowService = manifestWorkflowService;
     }
@@ -48,5 +50,20 @@ public class LogisticsController {
                 fleetService.assignDriverToVehicle(driverId, vehicleId);
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 🚀 MAIN WORKFLOW DISPATCH RELEASE:
+     * POST /api/manifests/{id}/dispatch
+     * Officially kicks off physical warehouse dispatch transport activities.
+     */
+    @PostMapping("/manifests/{id}/dispatch")
+    public ResponseEntity<RouteManifest> finalizeDispatch(@PathVariable("id") Long id) {
+
+        // Hand off execution straight down to the timestamping and cascading orchestration layer
+        RouteManifest dispatchedManifest = manifestWorkflowService.finalizeDispatch(id);
+
+        // Return HTTP 200 OK along with the fully modified parent record payload
+        return ResponseEntity.ok(dispatchedManifest);
     }
 }

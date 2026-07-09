@@ -5,6 +5,8 @@ import com.infotact.fleet.dto.DriverResponseDTO;
 import com.infotact.fleet.dto.VehicleRequestDTO;
 import com.infotact.fleet.dto.VehicleResponseDTO;
 import com.infotact.fleet.service.FleetService;
+import com.infotact.fleet.service.TaskStateService;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +20,11 @@ import java.util.List;
 public class FleetController {
 
     private final FleetService fleetService;
+    private TaskStateService taskStateService;
 
-    public FleetController(FleetService fleetService) {
+    public FleetController(FleetService fleetService, TaskStateService taskStateService) {
         this.fleetService = fleetService;
+        this.taskStateService = taskStateService;
     }
 
     @PostMapping("/vehicles")

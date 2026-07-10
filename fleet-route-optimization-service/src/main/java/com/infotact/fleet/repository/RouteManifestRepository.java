@@ -2,6 +2,7 @@ package com.infotact.fleet.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -44,4 +45,11 @@ public interface RouteManifestRepository extends JpaRepository<RouteManifest, Lo
      * Finds any manifests tied to a specific driver that match a list of active operational statuses.
      */
     boolean existsByDriverIdAndStatusIn(Long driverId, List<ManifestStatus> activeStatuses);
+    
+    
+    /**
+     * 🎯 IDEMPOTENCY QUERY HOOK:
+     * Locates any active, uncompleted routing plans assigned to a specific vehicle asset.
+     */
+    Optional<RouteManifest> findByVehicleIdAndStatus(Long vehicleId, ManifestStatus status);
 }

@@ -46,7 +46,6 @@ public class RouteManifest extends BaseEntity{
     private LocalDateTime completedAt;
     public void transitionToStatus(ManifestStatus targetStatus) {
         // Run the invariant guard rule evaluation check
-        this.status.validateTransitionTo(targetStatus);
-        this.status = targetStatus;
+       this.transitionToStatus(targetStatus);
     }
 }

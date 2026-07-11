@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,6 +52,7 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
 
         // 2. Load the raw unstaged delivery tasks from MySQL matching user selections
         List<DeliveryTask> rawTasks = deliveryTaskRepository.findAllById(request.getTaskIds());
+        
         // 🎯 FIXED FAIL-FAST GUARD: Stop execution BEFORE calling the external OSRM API
         if (rawTasks == null || rawTasks.size() < 2) {
             throw new IllegalArgumentException(
@@ -75,7 +77,7 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
             return dto;
         }).collect(Collectors.toList());
 
-        // 4. Fetch real road network cost tables
+        // 4. Fetch real road network cost tables (Conversions are handled inside Engine Implementation)
         double[][] distances = matrixEngine.calculateDistanceMatrix(taskDtos);
         double[][] durations = matrixEngine.calculateTravelTimeMatrix(taskDtos);
 
@@ -90,22 +92,48 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
                         vehicle.getId(),
                         vehicle.getLicensePlate());
 
-        // 7. Persist RouteManifest
-        RouteManifest manifest = new RouteManifest();
-        manifest.setVehicle(vehicle);
+        // 7. Persist RouteManifest (With Idempotency Check)
+        // Check if this vehicle already has an active, uncompleted plan sitting in the warehouse yard.
+        Optional<RouteManifest> existingManifest = routeManifestRepository.findByVehicleIdAndStatus(
+                vehicle.getId(), 
+                ManifestStatus.OPTIMIZED
+        );
+
+        RouteManifest manifest;
+        if (existingManifest.isPresent()) {
+            // Re-use and overwrite the existing active row instead of duplicating rows!
+            manifest = existingManifest.get();
+            
+            // Revert previously assigned tasks back to UNASSIGNED before processing the fresh sequence
+            if (manifest.getOptimizedStops() != null) {
+                for (DeliveryTask standardTask : manifest.getOptimizedStops()) {
+                    standardTask.setStatus(TaskStatus.UNASSIGNED);
+                }
+                manifest.getOptimizedStops().clear();
+            }
+        } else {
+            // Brand new vehicle route optimization execution block
+            manifest = new RouteManifest();
+            manifest.setVehicle(vehicle);
+        }
+
+        // Apply calculated metrics
         manifest.setTotalDistanceKm(optimizedResults.getTotalDistanceKm());
         manifest.setTotalDurationMinutes(optimizedResults.getTotalDurationMinutes());
         manifest.setStatus(ManifestStatus.OPTIMIZED);
 
+        // Map sorted DTO references back to database entity tracking collections
         List<DeliveryTask> sortedEntities = new ArrayList<>();
         for (DeliveryTaskResponseDTO sortedTaskDto : optimizedResults.getOptimizedStops()) {
-            DeliveryTask task = deliveryTaskRepository.findById(sortedTaskDto.getId()).orElseThrow(()-> new IllegalArgumentException("Invalid TaskId"));
+            DeliveryTask task = deliveryTaskRepository.findById(sortedTaskDto.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid TaskId: " + sortedTaskDto.getId()));
             task.setStatus(TaskStatus.ASSIGNED);
             sortedEntities.add(task);
         }
 
         manifest.setOptimizedStops(sortedEntities);
 
+        // Save parent record (Cascades assignment updates directly to mapped child entities)
         routeManifestRepository.save(manifest);
 
         return optimizedResults;

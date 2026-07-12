@@ -1,12 +1,14 @@
 package com.infotact.fleet.service.routing;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class NearestNeighborTspSolverStressTest {
 
@@ -78,6 +80,6 @@ class NearestNeighborTspSolverStressTest {
         }
 
         // Wrap the raw matrix double grid into your production DistanceMatrix type wrapper
-        return new DistanceMatrix(dataGrid);
+        return new DistanceMatrix(dataGrid, dataGrid);
     }
 }

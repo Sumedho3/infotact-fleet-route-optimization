@@ -1,5 +1,8 @@
 package com.infotact.fleet.exception;
-
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.infotact.fleet.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,32 @@ public class MapProviderExceptionHandler {
      * Catches and formats WebClient exceptions thrown during outbound API exchanges.
      * Updated to match the uniform Week 3 ErrorResponseDTO constructor strategy.
      */
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Bad Request - Geocoding Payload Fault (Invalid address data structure).",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "Unprocessable Entity - Geographic coordinates do not exist in the map subsystem.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "429",
+                    description = "Too Many Requests - Outbound map provider rate limit exceeded threshold filters.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error - Third-party OSRM routing engine server outage encountered.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class))
+            )
+    })
     @ExceptionHandler(WebClientResponseException.class)
     public ResponseEntity<ErrorResponseDTO> handleMapProviderNetworkException(WebClientResponseException ex, HttpServletRequest request) {
         HttpStatus status = (HttpStatus) ex.getStatusCode();
@@ -47,6 +76,14 @@ public class MapProviderExceptionHandler {
     /**
      * Catches instances where WebClient timeouts expire before the map server responds.
      */
+    @ApiResponse(
+            responseCode = "504",
+            description = "Gateway Timeout - The external routing network provider failed to respond in time.",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponseDTO.class)
+            )
+    )
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponseDTO> handleNetworkTimeoutException(IllegalStateException ex, HttpServletRequest request) {
         if (ex.getMessage() != null && ex.getMessage().contains("Timeout")) {

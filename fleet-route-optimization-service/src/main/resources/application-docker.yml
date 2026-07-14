@@ -1,0 +1,31 @@
+# =========================================================================
+# 🐳 ISOLATED DOCKER RUNTIME ENVIRONMENTS PROFILE
+# =========================================================================
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  # 🗄️ Relational Database Management Layer Container Pointers
+  datasource:
+    url: jdbc:mysql://mysql-container-host:3306/infotact_fleet_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: target_secure_docker_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # ⚙️ Hibernate & Persistence Performance Matrix Specs
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+
+# 🗺️ External Routing Infrastructure Grid Endpoints
+app:
+  routing:
+    osrm-base-url: http://osrm-backend-engine:5000
+    timeout-ms: 4500

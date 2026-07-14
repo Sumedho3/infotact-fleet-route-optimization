@@ -35,5 +35,5 @@ EXPOSE 8080
 # 🎯 SECURITY FIX (Day 2): Switch execution context from root to the low-privilege user
 USER appuser
 
-# Launch the microservice application engine safely
-ENTRYPOINT ["java", "-jar", "fleet-dispatch-service.jar"]
+# Launch the microservice application engine safely using the docker environment profile
+ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-jar", "fleet-dispatch-service.jar"]

@@ -27,20 +27,21 @@ class RouteManifestStateGuardTest {
     }
 
     @Test
-    @DisplayName("🛑 State Guard: Should block transition from UNASSIGNED to EN_ROUTE")
+    @DisplayName("🛑 State Guard: Should block transition from UNASSIGNED to IN_TRANSIT")
     void shouldBlockTransitionFromUnassignedToEnRoute() {
         assertThrows(DeliveryStateConflictException.class, () -> {
-            manifest.transitionToStatus(ManifestStatus.EN_ROUTE);
+            manifest.transitionToStatus(ManifestStatus.IN_TRANSIT);
         });
     }
 
     @Test
     @DisplayName("✅ State Guard: Should allow valid transition path")
-    void shouldAllowValidStateTransitionPaths() {
+    void shouldAllowValidTransitionPaths() {
+        // According to production code, UNASSIGNED can cleanly move to DISPATCHED
         assertDoesNotThrow(() -> {
-            manifest.transitionToStatus(ManifestStatus.OPTIMIZED);
+            manifest.transitionToStatus(ManifestStatus.DISPATCHED);
         });
-
-        assertEquals(ManifestStatus.OPTIMIZED, manifest.getStatus());
+        
+        assertEquals(ManifestStatus.DISPATCHED, manifest.getStatus());
     }
 }

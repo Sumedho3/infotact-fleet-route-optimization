@@ -1,12 +1,14 @@
 package com.infotact.fleet.entity;
 
-import com.infotact.fleet.exception.DeliveryStateConflictException;
-import com.infotact.fleet.model.ManifestStatus;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.infotact.fleet.exception.DeliveryStateConflictException;
+import com.infotact.fleet.model.ManifestStatus;
 
 class RouteManifestStateGuardTest {
 
@@ -28,7 +30,7 @@ class RouteManifestStateGuardTest {
 
     @Test
     @DisplayName("🛑 State Guard: Should block transition from UNASSIGNED to IN_TRANSIT")
-    void shouldBlockTransitionFromUnassignedToEnRoute() {
+    void shouldBlockTransitionFromUnassignedToInTransit() {
         assertThrows(DeliveryStateConflictException.class, () -> {
             manifest.transitionToStatus(ManifestStatus.IN_TRANSIT);
         });
@@ -37,11 +39,10 @@ class RouteManifestStateGuardTest {
     @Test
     @DisplayName("✅ State Guard: Should allow valid transition path")
     void shouldAllowValidTransitionPaths() {
-        // According to production code, UNASSIGNED can cleanly move to DISPATCHED
         assertDoesNotThrow(() -> {
             manifest.transitionToStatus(ManifestStatus.DISPATCHED);
         });
-        
+
         assertEquals(ManifestStatus.DISPATCHED, manifest.getStatus());
     }
 }

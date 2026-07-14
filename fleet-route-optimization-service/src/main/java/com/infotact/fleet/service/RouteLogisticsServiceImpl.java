@@ -1,5 +1,16 @@
 package com.infotact.fleet.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.infotact.fleet.dto.DeliveryTaskResponseDTO;
 import com.infotact.fleet.dto.RouteOptimizationRequestDTO;
 import com.infotact.fleet.dto.RouteOptimizationResponseDTO;
@@ -14,17 +25,11 @@ import com.infotact.fleet.repository.VehicleRepository;
 import com.infotact.fleet.service.routing.DistanceMatrix;
 import com.infotact.fleet.service.routing.RoutingMatrixEngine;
 import com.infotact.fleet.service.routing.RoutingOptimizationServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class RouteLogisticsServiceImpl implements RouteLogisticsService {
+
+    private static final Logger log = LoggerFactory.getLogger(RouteLogisticsServiceImpl.class);
 
     @Autowired
     private VehicleRepository vehicleRepository;
@@ -45,27 +50,37 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
     @Transactional
     public RouteOptimizationResponseDTO optimizeAndAssignRoute(RouteOptimizationRequestDTO request) {
 
-        // 1. Fetch and validate the vehicle asset row
-        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Target vehicle asset not found with ID: " + request.getVehicleId()));
+        log.info("🚀 [DISPATCH LIFECYCLE] Initiating route optimization transaction for Vehicle ID: [{}]",
+                request.getVehicleId());
 
-        // 2. Load the raw unstaged delivery tasks from MySQL matching user selections
+        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+                .orElseThrow(() -> {
+                    log.error("❌ [DISPATCH CRITICAL] Optimization aborted. Vehicle not found with ID: [{}]",
+                            request.getVehicleId());
+                    return new IllegalArgumentException(
+                            "Target vehicle asset not found with ID: " + request.getVehicleId());
+                });
+
         List<DeliveryTask> rawTasks = deliveryTaskRepository.findAllById(request.getTaskIds());
-        
-        // 🎯 FIXED FAIL-FAST GUARD: Stop execution BEFORE calling the external OSRM API
+
         if (rawTasks == null || rawTasks.size() < 2) {
+            int taskCount = (rawTasks == null) ? 0 : rawTasks.size();
+
+            log.warn("⚠️ [DISPATCH VALIDATION] Aborting optimization layout. Insufficient stop markers supplied: [{}]",
+                    taskCount);
+
             throw new IllegalArgumentException(
                     "Route optimization requires a minimum of 2 delivery waypoints to compute a road network matrix. Stops supplied: "
-                            + (rawTasks == null ? 0 : rawTasks.size())
-            );
-        }
-        if (rawTasks.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Cannot optimize an empty list of warehouse delivery tasks.");
+                            + taskCount);
         }
 
-        // 3. Transform entity properties into coordinate data models
+        if (rawTasks.isEmpty()) {
+            log.warn("⚠️ [DISPATCH VALIDATION] Aborting optimization layout. Target task payload array is completely empty.");
+            throw new IllegalArgumentException("Cannot optimize an empty list of warehouse delivery tasks.");
+        }
+
+        log.debug("[DISPATCH TRACE] Mapping [{}] database task entities to DTO objects.", rawTasks.size());
+
         List<DeliveryTaskResponseDTO> taskDtos = rawTasks.stream().map(task -> {
             DeliveryTaskResponseDTO dto = new DeliveryTaskResponseDTO();
             dto.setId(task.getId());
@@ -77,14 +92,15 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
             return dto;
         }).collect(Collectors.toList());
 
-        // 4. Fetch real road network cost tables (Conversions are handled inside Engine Implementation)
+        log.debug("[DISPATCH TRACE] Requesting distance matrix from routing engine.");
+
         double[][] distances = matrixEngine.calculateDistanceMatrix(taskDtos);
         double[][] durations = matrixEngine.calculateTravelTimeMatrix(taskDtos);
 
-        // 5. Pack into DistanceMatrix
         DistanceMatrix liveMatrix = new DistanceMatrix(distances, durations);
 
-        // 6. Invoke the optimization engine
+        log.debug("[DISPATCH TRACE] Executing optimization algorithm.");
+
         RouteOptimizationResponseDTO optimizedResults =
                 routingOptimizationService.computeLiveOptimizedRoute(
                         taskDtos,
@@ -92,49 +108,67 @@ public class RouteLogisticsServiceImpl implements RouteLogisticsService {
                         vehicle.getId(),
                         vehicle.getLicensePlate());
 
-        // 7. Persist RouteManifest (With Idempotency Check)
-        // Check if this vehicle already has an active, uncompleted plan sitting in the warehouse yard.
-        Optional<RouteManifest> existingManifest = routeManifestRepository.findByVehicleIdAndStatus(
-                vehicle.getId(), 
-                ManifestStatus.OPTIMIZED
-        );
+        log.debug("[DISPATCH TRACE] Checking for existing optimized manifest.");
+
+        Optional<RouteManifest> existingManifest =
+                routeManifestRepository.findByVehicleIdAndStatus(
+                        vehicle.getId(),
+                        ManifestStatus.OPTIMIZED);
 
         RouteManifest manifest;
+
         if (existingManifest.isPresent()) {
-            // Re-use and overwrite the existing active row instead of duplicating rows!
+
             manifest = existingManifest.get();
-            
-            // Revert previously assigned tasks back to UNASSIGNED before processing the fresh sequence
+
+            log.info("🔄 [DISPATCH LIFECYCLE] Existing manifest found for Vehicle ID: [{}]. Reusing manifest.",
+                    vehicle.getId());
+
             if (manifest.getOptimizedStops() != null) {
-                for (DeliveryTask standardTask : manifest.getOptimizedStops()) {
-                    standardTask.setStatus(TaskStatus.UNASSIGNED);
+
+                log.debug("[DISPATCH TRACE] Resetting [{}] previous delivery tasks.",
+                        manifest.getOptimizedStops().size());
+
+                for (DeliveryTask task : manifest.getOptimizedStops()) {
+                    task.setStatus(TaskStatus.UNASSIGNED);
                 }
+
                 manifest.getOptimizedStops().clear();
             }
+
         } else {
-            // Brand new vehicle route optimization execution block
+
+            log.debug("[DISPATCH TRACE] Creating new RouteManifest.");
+
             manifest = new RouteManifest();
             manifest.setVehicle(vehicle);
         }
 
-        // Apply calculated metrics
         manifest.setTotalDistanceKm(optimizedResults.getTotalDistanceKm());
         manifest.setTotalDurationMinutes(optimizedResults.getTotalDurationMinutes());
         manifest.setStatus(ManifestStatus.OPTIMIZED);
 
-        // Map sorted DTO references back to database entity tracking collections
         List<DeliveryTask> sortedEntities = new ArrayList<>();
-        for (DeliveryTaskResponseDTO sortedTaskDto : optimizedResults.getOptimizedStops()) {
-            DeliveryTask task = deliveryTaskRepository.findById(sortedTaskDto.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid TaskId: " + sortedTaskDto.getId()));
+
+        for (DeliveryTaskResponseDTO dto : optimizedResults.getOptimizedStops()) {
+
+            DeliveryTask task = deliveryTaskRepository.findById(dto.getId())
+                    .orElseThrow(() -> {
+                        log.error("❌ [DISPATCH CRITICAL] Task not found: [{}]", dto.getId());
+                        return new IllegalArgumentException("Invalid TaskId: " + dto.getId());
+                    });
+
             task.setStatus(TaskStatus.ASSIGNED);
             sortedEntities.add(task);
         }
 
         manifest.setOptimizedStops(sortedEntities);
 
-        // Save parent record (Cascades assignment updates directly to mapped child entities)
         routeManifestRepository.save(manifest);
+
+        log.info("✅ [DISPATCH LIFECYCLE] Route optimization completed successfully. Manifest ID: [{}], Distance: [{} km]",
+                manifest.getId(),
+                manifest.getTotalDistanceKm());
 
         return optimizedResults;
     }

@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # ☕ Container 1: Your Spring Boot Java Microservice
+  fleet-route-app:
+    build: .
+    container_name: fleet-optimization-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - DB_HOST=mysql-container-host
+      - DB_PORT=3306
+      - DB_NAME=fleet_db
+      - DB_USERNAME=${SYSTEM_DB_USER}       # Read securely from your host system
+      - DB_PASSWORD=${SYSTEM_DB_PASSWORD}   # Read securely from your host system
+      - MAP_API_KEY=${SYSTEM_MAP_API_KEY}   # Read securely from your host system
+    depends_on:
+      - mysql-container-host
+    networks:
+      - fleet-network
+
+  # 🗄️ Container 2: The MySQL Database Instance
+  mysql-container-host:
+    image: mysql:8.0
+    container_name: mysql-database-server
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=fleet_db
+      - MYSQL_USER=${SYSTEM_DB_USER}         # Matches the Java app credentials securely
+      - MYSQL_PASSWORD=${SYSTEM_DB_PASSWORD} # Matches the Java app credentials securely
+      - MYSQL_ROOT_PASSWORD=${SYSTEM_DB_ROOT_PASSWORD} # Secure root management password
+    volumes:
+      - mysql_fleet_data:/var/lib/mysql
+    networks:
+      - fleet-network
+
+# 💾 Persistent data storage configuration volumes
+volumes:
+  mysql_fleet_data:
+
+# 🌐 Isolated virtual network bridge
+networks:
+  fleet-network:
+    driver: bridge

@@ -9,8 +9,8 @@ spring:
   # 🗄️ Relational Database Management Layer Container Pointers
   datasource:
     url: jdbc:mysql://mysql-container-host:3306/infotact_fleet_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: target_secure_docker_password
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # ⚙️ Hibernate & Persistence Performance Matrix Specs

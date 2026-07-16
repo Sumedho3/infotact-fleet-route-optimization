@@ -12,29 +12,36 @@ services:
       - DB_HOST=mysql-container-host
       - DB_PORT=3306
       - DB_NAME=fleet_db
-      - DB_USERNAME=${SYSTEM_DB_USER}       # Read securely from your host system
-      - DB_PASSWORD=${SYSTEM_DB_PASSWORD}   # Read securely from your host system
+      - DB_USERNAME=root       # Read securely from your host system
+      - DB_PASSWORD=${SYSTEM_DB_ROOT_PASSWORD}   # Read securely from your host system
       - MAP_API_KEY=${SYSTEM_MAP_API_KEY}   # Read securely from your host system
     depends_on:
-      - mysql-container-host
+      mysql-container-host:
+         condition: service_healthy
     networks:
       - fleet-network
+    links:
+      - mysql-container-host:mysql-container-host 
 
   # 🗄️ Container 2: The MySQL Database Instance
   mysql-container-host:
     image: mysql:8.0
     container_name: mysql-database-server
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       - MYSQL_DATABASE=fleet_db
-      - MYSQL_USER=${SYSTEM_DB_USER}         # Matches the Java app credentials securely
       - MYSQL_PASSWORD=${SYSTEM_DB_PASSWORD} # Matches the Java app credentials securely
       - MYSQL_ROOT_PASSWORD=${SYSTEM_DB_ROOT_PASSWORD} # Secure root management password
     volumes:
       - mysql_fleet_data:/var/lib/mysql
     networks:
       - fleet-network
+    healthcheck:                     # 👈 ADD THIS ENGINE BLOCK
+        test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${SYSTEM_DB_ROOT_PASSWORD}"]
+        timeout: 5s
+        retries: 5
+        start_period: 15s
 
 # 💾 Persistent data storage configuration volumes
 volumes:

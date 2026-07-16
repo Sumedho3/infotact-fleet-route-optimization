@@ -10,21 +10,18 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChainBlueprint(HttpSecurity http) throws Exception {
-
-        http
-                .csrf(csrf -> csrf.disable())
-
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
-
-                        .anyRequest().authenticated());
-
-        return http.build();
-    }
+	@Bean
+	public SecurityFilterChain securityFilterChainBlueprint(HttpSecurity http) throws Exception {
+	    return http
+	        .csrf(csrf -> csrf.disable())
+	        .authorizeHttpRequests(auth -> auth
+	            .requestMatchers(
+	                "/v3/api-docs/**",
+	                "/swagger-ui/**",
+	                "/swagger-ui.html"
+	            ).permitAll()
+	            .anyRequest().authenticated()
+	        )
+	        .build(); // 👈 This correctly compiles the entire fluid chain into a single configuration block
+	}
 }

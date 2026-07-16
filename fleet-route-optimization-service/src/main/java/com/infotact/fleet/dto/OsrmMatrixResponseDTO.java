@@ -1,5 +1,5 @@
 package com.infotact.fleet.dto;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +10,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(
+        name = "OsrmMatrixResponse",
+        description = "Data schema handling dynamic geographic multi-stop node matrix outputs from remote servers"
+)
+
 public class OsrmMatrixResponseDTO {
 
     // 🎯 OSRM Status Code (e.g., "Ok" indicates successful calculation)

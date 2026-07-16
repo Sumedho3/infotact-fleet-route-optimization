@@ -1,5 +1,5 @@
 package com.infotact.fleet.dto;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +14,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(
+        name = "DeliveryTaskRequest",
+        description = "Payload structure used to instantiate or update warehouse staging tasks"
+)
 public class DeliveryTaskRequestDTO {
+
 	
 	@NotBlank(message = "Destination address field description is required")
 	private String destinationAddress;

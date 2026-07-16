@@ -1,5 +1,5 @@
 package com.infotact.fleet.dto;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 import com.infotact.fleet.model.TaskStatus;
@@ -13,6 +13,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(
+        name = "DeliveryTaskResponse",
+        description = "Output registry schema mapping finalized geospatial stop data points"
+)
+
 public class DeliveryTaskResponseDTO {
 	
 	private Long id;

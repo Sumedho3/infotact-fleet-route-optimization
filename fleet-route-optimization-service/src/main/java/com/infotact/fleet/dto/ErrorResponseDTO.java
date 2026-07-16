@@ -1,5 +1,5 @@
 package com.infotact.fleet.dto;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -11,6 +11,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
+@Schema(
+        name = "ErrorResponse",
+        description = "Standardized format describing system errors encountered at runtime"
+)
+
 public class ErrorResponseDTO {
 	
 	private LocalDateTime timestamp;

@@ -1,5 +1,5 @@
 package com.infotact.fleet.dto;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -10,6 +10,11 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(
+        name = "VehicleResponse",
+        description = "Operational description matrix detailing physical vehicle metadata"
+)
+
 public class VehicleResponseDTO {
     private Long id;
     private String licensePlate;

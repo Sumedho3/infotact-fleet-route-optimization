@@ -8,11 +8,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(
+        name = "RouteOptimizationRequest",
+        description = "Input payload for computing optimized vehicle distribution sequences"
+)
+
 public class RouteOptimizationRequestDTO {
 
     @NotNull(message = "Vehicle selection is required for optimization deployment")

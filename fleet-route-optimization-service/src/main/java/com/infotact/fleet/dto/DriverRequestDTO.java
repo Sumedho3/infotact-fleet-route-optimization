@@ -1,5 +1,5 @@
 package com.infotact.fleet.dto;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -15,6 +15,11 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(
+        name = "DriverRequest",
+        description = "Inbound form tracking parameters to register active fleet operational operators"
+)
+
 public class DriverRequestDTO {
 
     @NotBlank(message = "Driver full name cannot be blank")

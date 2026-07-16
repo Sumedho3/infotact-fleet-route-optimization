@@ -1,5 +1,5 @@
 package com.infotact.fleet.dto;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -13,6 +13,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(
+        name = "VehicleRequest",
+        description = "Operational description matrix detailing physical vehicle metadata"
+)
+
 public class VehicleRequestDTO {
 
     @NotBlank(message = "License plate cannot be blank")

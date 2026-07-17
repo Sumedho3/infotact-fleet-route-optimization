@@ -22,6 +22,16 @@ services:
       - fleet-network
     links:
       - mysql-container-host:mysql-container-host 
+    
+    # 🎯 ADDED: Resource allocation guardrails to prevent thread resource exhaustion
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'          # Maximum limit of 1.5 CPU cores
+          memory: 1024M        # Maximum memory cap at 1GB RAM
+        reservations:
+          cpus: '0.5'          # Guaranteed baseline allocation of 0.5 CPU cores
+          memory: 512M         # Guaranteed baseline allocation of 512MB RAM
 
   # 🗄️ Container 2: The MySQL Database Instance
   mysql-container-host:

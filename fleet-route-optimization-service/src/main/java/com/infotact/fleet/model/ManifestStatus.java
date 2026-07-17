@@ -13,16 +13,18 @@ public enum ManifestStatus {
     CANCELLED;
 
     /**
-     * 🛡️ TRANSITION GUARD MATRIX:
-     * Defines the strict legal path boundaries for a manifest lifecycle.
+     * 🏁 TRANSITION GUARD MATRIX:
+     * Aligns with RouteManifest.java tracking validation logic.
      */
     public void validateTransitionTo(ManifestStatus targetStatus) {
 
         List<ManifestStatus> allowedNextStates = switch (this) {
-            case UNASSIGNED, OPTIMIZED -> List.of(DISPATCHED, CANCELLED);
+            case UNASSIGNED -> List.of(OPTIMIZED, CANCELLED);
+            case OPTIMIZED -> List.of(DISPATCHED, UNASSIGNED, CANCELLED);
             case DISPATCHED -> List.of(IN_TRANSIT, CANCELLED);
             case IN_TRANSIT -> List.of(DELIVERED, CANCELLED);
-            case DELIVERED, CANCELLED -> List.of();
+            case DELIVERED -> List.of();
+            case CANCELLED -> List.of();
         };
 
         if (!allowedNextStates.contains(targetStatus)) {

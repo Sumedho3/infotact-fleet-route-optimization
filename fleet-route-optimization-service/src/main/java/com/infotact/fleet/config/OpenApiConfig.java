@@ -18,7 +18,7 @@ public class OpenApiConfig {
 
         // 1. Define target infrastructure server environments
         Server localDevelopmentServer = new Server();
-        localDevelopmentServer.setUrl("http://localhost:8080");
+        localDevelopmentServer.setUrl("http://localhost:8081");
         localDevelopmentServer.setDescription(
                 "Local Engineering Staging Environment (In-Memory H2 Grid)");
 

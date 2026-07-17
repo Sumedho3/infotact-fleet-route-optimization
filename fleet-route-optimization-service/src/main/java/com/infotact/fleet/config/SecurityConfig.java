@@ -20,6 +20,7 @@ public class SecurityConfig {
 	                "/swagger-ui/**",
 	                "/swagger-ui.html"
 	            ).permitAll()
+	            .requestMatchers("/api/**").permitAll()
 	            .anyRequest().authenticated()
 	        )
 	        .build(); // 👈 This correctly compiles the entire fluid chain into a single configuration block

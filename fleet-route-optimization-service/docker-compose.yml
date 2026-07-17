@@ -9,12 +9,13 @@ services:
       - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - TZ=Asia/Kolkata                          # 🌍 Forces Java Application runtime to use IST
       - DB_HOST=mysql-container-host
       - DB_PORT=3306
       - DB_NAME=fleet_db
-      - DB_USERNAME=root       # Read securely from your host system
+      - DB_USERNAME=root                         # Read securely from your host system
       - DB_PASSWORD=${SYSTEM_DB_ROOT_PASSWORD}   # Read securely from your host system
-      - MAP_API_KEY=${SYSTEM_MAP_API_KEY}   # Read securely from your host system
+      - MAP_API_KEY=${SYSTEM_MAP_API_KEY}         # Read securely from your host system
     depends_on:
       mysql-container-host:
          condition: service_healthy
@@ -23,7 +24,7 @@ services:
     links:
       - mysql-container-host:mysql-container-host 
     
-    # 🎯 ADDED: Resource allocation guardrails to prevent thread resource exhaustion
+    # 🎯 Resource allocation guardrails to prevent thread resource exhaustion
     deploy:
       resources:
         limits:
@@ -40,14 +41,15 @@ services:
     ports:
       - "3307:3306"
     environment:
+      - TZ=Asia/Kolkata                          # 🌍 Forces MySQL internal database clock to use IST
       - MYSQL_DATABASE=fleet_db
-      - MYSQL_PASSWORD=${SYSTEM_DB_PASSWORD} # Matches the Java app credentials securely
+      - MYSQL_PASSWORD=${SYSTEM_DB_PASSWORD}     # Matches the Java app credentials securely
       - MYSQL_ROOT_PASSWORD=${SYSTEM_DB_ROOT_PASSWORD} # Secure root management password
     volumes:
       - mysql_fleet_data:/var/lib/mysql
     networks:
       - fleet-network
-    healthcheck:                     # 👈 ADD THIS ENGINE BLOCK
+    healthcheck:                     
         test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${SYSTEM_DB_ROOT_PASSWORD}"]
         timeout: 5s
         retries: 5

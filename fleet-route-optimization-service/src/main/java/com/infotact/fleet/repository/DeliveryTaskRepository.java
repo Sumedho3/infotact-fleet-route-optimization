@@ -48,6 +48,6 @@ public interface DeliveryTaskRepository extends JpaRepository<DeliveryTask, Long
      * Bulk updates all underlying tasks belonging to a specific parent manifest.
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE DeliveryTask t SET t.status = :targetStatus WHERE t.route.id = :manifestId")
+    @Query("UPDATE DeliveryTask t SET t.status = :targetStatus WHERE t.manifest.id = :manifestId")
     int cascadeStatusForManifestTasks(@Param("manifestId") Long manifestId, @Param("targetStatus") TaskStatus targetStatus);
 }

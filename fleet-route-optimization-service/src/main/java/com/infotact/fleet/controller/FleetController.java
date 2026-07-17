@@ -34,14 +34,28 @@ public class FleetController {
      * PATCH /api/tasks/{id}/status?targetStatus=DISPATCHED
      */
     @PatchMapping("/tasks/{id}/status")
-    public ResponseEntity<DeliveryTask> updateTaskStatus(
+    public ResponseEntity<com.infotact.fleet.dto.DeliveryTaskResponseDTO> updateTaskStatus(
             @PathVariable Long id,
             @RequestParam TaskStatus targetStatus) {
 
-        DeliveryTask updatedTask =
+        // 1. Update status via the service layer
+        com.infotact.fleet.entity.DeliveryTask updatedTask = 
                 taskStateService.updateTaskStatus(id, targetStatus);
 
-        return ResponseEntity.ok(updatedTask);
+        // 2. Map fields to the DTO to break the infinite bidirectional serialization loop
+        com.infotact.fleet.dto.DeliveryTaskResponseDTO responseDto = new com.infotact.fleet.dto.DeliveryTaskResponseDTO(
+                updatedTask.getId(),
+                updatedTask.getDestinationAddress(),
+                updatedTask.getLatitude(),
+                updatedTask.getLongitude(),
+                updatedTask.getPackageWeightKg(),
+                updatedTask.getStatus(),
+                updatedTask.getManifest() != null ? updatedTask.getManifest().getId() : null,
+                updatedTask.getCreatedAt(),
+                updatedTask.getUpdatedAt()
+        );
+
+        return ResponseEntity.ok(responseDto);
     }
 
     @PostMapping("/vehicles")

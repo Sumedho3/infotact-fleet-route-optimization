@@ -54,7 +54,8 @@ public class ManifestWorkflowServiceImpl implements ManifestWorkflowService {
         }
 
         // 3. Ensure manifest is assignable
-        if (manifest.getStatus() != ManifestStatus.UNASSIGNED) {
+     // Update this condition in ManifestWorkflowServiceImpl.java
+        if (manifest.getStatus() != ManifestStatus.UNASSIGNED && manifest.getStatus() != ManifestStatus.OPTIMIZED) {
             throw new DeliveryStateConflictException(
                     "Compilation Failure: Cannot link driver to a manifest that is already in "
                             + manifest.getStatus()

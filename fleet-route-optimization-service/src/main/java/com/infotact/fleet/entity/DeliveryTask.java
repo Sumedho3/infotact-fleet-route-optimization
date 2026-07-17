@@ -36,8 +36,8 @@ public class DeliveryTask extends BaseEntity {
     private TaskStatus status = TaskStatus.UNASSIGNED;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "route_id")
-    private Route route;
+    @JoinColumn(name = "manifest_id", insertable = false, updatable = false)
+    private RouteManifest manifest;
     public void validateTransitionTo(TaskStatus targetStatus) {
         this.status.validateTransitionTo(targetStatus);
     }

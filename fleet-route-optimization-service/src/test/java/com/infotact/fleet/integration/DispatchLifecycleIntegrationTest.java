@@ -108,7 +108,6 @@ class DispatchLifecycleIntegrationTest {
         task1.setLongitude(73.6845);
         task1.setPackageWeightKg(150.0);
         task1.setStatus(TaskStatus.ASSIGNED);
-        task1.setRoute(legalRoute); 
         task1 = deliveryTaskRepository.save(task1);
         this.task1Id = task1.getId();
 
@@ -118,7 +117,6 @@ class DispatchLifecycleIntegrationTest {
         task2.setLongitude(73.7798);
         task2.setPackageWeightKg(85.0);
         task2.setStatus(TaskStatus.ASSIGNED);
-        task2.setRoute(legalRoute); 
         task2 = deliveryTaskRepository.save(task2);
         this.task2Id = task2.getId();
         

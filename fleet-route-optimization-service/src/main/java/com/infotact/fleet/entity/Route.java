@@ -38,16 +38,16 @@ public class Route extends BaseEntity {
     @Column(name = "status", nullable = false, length = 30)
     private String status = "PENDING";
 
-    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<DeliveryTask> tasks = new ArrayList<>();
+//    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    private List<DeliveryTask> tasks = new ArrayList<>();
 
-    public void addDeliveryTask(DeliveryTask task) {
-        tasks.add(task);
-        task.setRoute(this);
-    }
-
-    public void removeDeliveryTask(DeliveryTask task) {
-        tasks.remove(task);
-        task.setRoute(null);
-    }
+//    public void addDeliveryTask(DeliveryTask task) {
+//        tasks.add(task);
+//        task.setRoute(this);
+//    }
+//
+//    public void removeDeliveryTask(DeliveryTask task) {
+//        tasks.remove(task);
+//        task.setRoute(null);
+//    }
 }

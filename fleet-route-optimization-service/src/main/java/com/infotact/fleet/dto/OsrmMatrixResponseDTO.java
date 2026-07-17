@@ -14,18 +14,23 @@ import lombok.Setter;
         name = "OsrmMatrixResponse",
         description = "Data schema handling dynamic geographic multi-stop node matrix outputs from remote servers"
 )
-
 public class OsrmMatrixResponseDTO {
 
-    // 🎯 OSRM Status Code (e.g., "Ok" indicates successful calculation)
+    @Schema(description = "OSRM engine service operational transaction confirmation response code status value string", example = "Ok")
     @JsonProperty("code")
     private String code;
 
-    // Two-dimensional array tracking distance cost values between nodes in meters
+    @Schema(
+        description = "Two-dimensional distance array displaying structural spatial path cost weights tracking grid relationships between sequential nodes measured in meters (m)", 
+        example = "[[0.0, 1540.5], [1535.2, 0.0]]"
+    )
     @JsonProperty("distances")
     private double[][] distances;
 
-    // Two-dimensional array tracking travel duration values between nodes in seconds
+    @Schema(
+        description = "Two-dimensional duration array displaying dynamic temporal path cost tracking grids between sequential nodes measured in total seconds (s)", 
+        example = "[[0.0, 120.4], [118.9, 0.0]]"
+    )
     @JsonProperty("durations")
     private double[][] durations;
 }

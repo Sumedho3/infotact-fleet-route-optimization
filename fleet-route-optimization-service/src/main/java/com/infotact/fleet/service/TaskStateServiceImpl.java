@@ -51,19 +51,17 @@ public class TaskStateServiceImpl implements TaskStateService {
                         new NoSuchElementException(
                                 "Route manifest record not found with ID: " + manifestId));
 
-
-        // 2. Validate state transition boundaries using Day 4 explicit guard matrix rules
+        // 1. Validate state transition boundaries using Day 4 explicit guard matrix rules
         manifest.transitionToStatus(targetStatus);
 
-        // 3. Mutate parent status
-        manifest.setStatus(targetStatus);
-        RouteManifest savedManifest = routeManifestRepository.save(manifest);
-
-        // 4. CASCADE PIPELINE: If parent turns DISPATCHED, trigger child cascade changes down to database rows
+        // 2. CASCADE PIPELINE: Trigger child cascade updates first while session is active
         if (targetStatus == ManifestStatus.DISPATCHED) {
             deliveryTaskRepository.cascadeStatusForManifestTasks(manifestId, TaskStatus.DISPATCHED);
         }
 
-        return savedManifest;
+        // 3. Mutate parent status and flush atomically
+        manifest.setStatus(targetStatus);
+        
+        return routeManifestRepository.saveAndFlush(manifest);
     }
 }
